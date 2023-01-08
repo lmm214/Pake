@@ -58,7 +58,11 @@ window.addEventListener("DOMContentLoaded", (_event) => {
     .wr_whiteTheme .recommend_preview_item{
       background-color: #f9f3e8 !important;
     }
-    
+    .readerTopBar{height:3rem;opacity:0.95;}
+    .readerTopBar .actionItem.addShelfItem{display:inline-flex}
+    .readerTopBar_right{display:none !important;}
+    .readerTopBar .addShelfItem{padding-right:100px;}
+
     #page #footer-wrapper,
     .drawing-board .toolbar .toolbar-action,
     .c-swiper-container,
