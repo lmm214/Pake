@@ -41,10 +41,18 @@ window.addEventListener("DOMContentLoaded", (_event) => {
   const style = document.createElement("style");
   style.innerHTML = `
     *{font-family: "LXGW WenKai Screen" !important;}    
-    body::-webkit-scrollbar{width:0px;height:0px;}
+    body::-webkit-scrollbar{width:0px;height:0px;}    .app_content{
+        width: 100% !important;
+        max-width: 980px !important;
+    }
+    .readerChapterContent {
+        margin-left: 2rem;
+        margin-right: 2rem;
+    }
+    .readerControls_fontSize{opacity:0.3 !important;}
+    .readerControls_fontSize:hover{opacity:1 !important;}
     .wr_whiteTheme .app_content{box-shadow: 0 8px 32px rgba(0,25,104,.1) !important ;}
     .wr_whiteTheme .app_content.shelf_container{box-shadow: none !important;}
-
     html body.wr_whiteTheme,
     .wr_whiteTheme .navBar,
     .wr_whiteTheme .navBar_home,
@@ -58,10 +66,27 @@ window.addEventListener("DOMContentLoaded", (_event) => {
     .wr_whiteTheme .recommend_preview_item{
       background-color: #f9f3e8 !important;
     }
-    .readerTopBar{height:3rem;opacity:0.95;}
-    .readerTopBar .actionItem.addShelfItem{display:inline-flex}
-    .readerTopBar_right{display:none !important;}
-    .readerTopBar .addShelfItem{padding-right:100px;}
+    .readerMemberCardTips,
+    .readerTopBar,
+    .readerControls_item,
+    .navBarOffset {
+        display: none !important;
+    }
+    .readerBottomBar {
+        transform: none;
+        display: flex !important;
+        opacity: 0 !important;
+        transition: opacity 400ms ease-out !important;
+    }
+    .readerBottomBar:hover {
+        display: flex !important;
+        opacity: 1 !important;
+    }
+    .readerBottomSettingPanel {
+        display: block;
+        top: 88% !important;
+        height: 7% !important;
+    }
 
     #page #footer-wrapper,
     .drawing-board .toolbar .toolbar-action,
