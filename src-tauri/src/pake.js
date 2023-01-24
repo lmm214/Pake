@@ -32,8 +32,59 @@ const ctrlKeyShortcuts = {
 };
 
 window.addEventListener("DOMContentLoaded", (_event) => {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.type = "text/css";
+  link.href = "https://npm.elemecdn.com/lxgw-wenkai-screen-webfont/style.css";
+  document.head.append(link);
+  
   const style = document.createElement("style");
   style.innerHTML = `
+    *{font-family: "LXGW WenKai Screen" !important;}    
+    body::-webkit-scrollbar{width:0px;height:0px;}
+    .readerChapterContent {
+        margin-left: 2rem;
+        margin-right: 2rem;
+    }
+    .readerControls_fontSize{opacity:0.3 !important;}
+    .readerControls_fontSize:hover{opacity:1 !important;}
+    .wr_whiteTheme .app_content{box-shadow: 0 8px 32px rgba(0,25,104,.1) !important ;}
+    .wr_whiteTheme .app_content.shelf_container{box-shadow: none !important;}
+    html body.wr_whiteTheme,
+    .wr_whiteTheme .navBar,
+    .wr_whiteTheme .navBar_home,
+    .wr_whiteTheme .bookshelf_preview_item,
+    .wr_whiteTheme .app_content,
+    .wr_whiteTheme .readerControls_item,
+    .wr_whiteTheme .readerControls_fontSize,
+    .wr_whiteTheme .readerTopBar,
+    .wr_whiteTheme .readerBottomBar,
+    .wr_whiteTheme .readerBottomSettingPanel,
+    .wr_whiteTheme .recommend_preview_item{
+      background-color: #f9f3e8 !important;
+    }
+    .readerMemberCardTips,
+    .readerTopBar,
+    .readerControls_item,
+    .navBarOffset {
+        display: none !important;
+    }
+    .readerBottomBar {
+        transform: none;
+        display: flex !important;
+        opacity: 0 !important;
+        transition: opacity 400ms ease-out !important;
+    }
+    .readerBottomBar:hover {
+        display: flex !important;
+        opacity: 1 !important;
+    }
+    .readerBottomSettingPanel {
+        display: block;
+        top: 88% !important;
+        height: 7% !important;
+    }
+    
     #page #footer-wrapper,
     .drawing-board .toolbar .toolbar-action,
     .c-swiper-container,
