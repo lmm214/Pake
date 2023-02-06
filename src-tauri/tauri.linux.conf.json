@@ -2,10 +2,10 @@
   "tauri": {
     "bundle": {
       "icon": [
-        "png/weread_256.ico",
-        "png/weread_512.png"
+        "png/memos_256.ico",
+        "png/memos_512.png"
       ],
-      "identifier": "com.tw93.weread",
+      "identifier": "com.lmm214.memos",
       "active": true,
       "category": "DeveloperTool",
       "copyright": "",
@@ -23,7 +23,7 @@
           "gnome-video-effects-extra"
         ],
         "files": {
-          "/usr/share/applications/com-tw93-weread.desktop": "assets/com-tw93-weread.desktop"
+          "/usr/share/applications/com-tw93-memos.desktop": "assets/com-tw93-memos.desktop"
         }
       },
       "externalBin": [],
