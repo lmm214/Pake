@@ -1,16 +1,16 @@
 {
   "package": {
-    "productName": "WeRead",
+    "productName": "Memos",
     "version": "1.0.0"
   },
   "tauri": {
     "windows": [
       {
-        "url": "https://weread.qq.com/",
+        "url": "https://edui123.com/memos/",
         "transparent": true,
         "fullscreen": false,
-        "width": 1200,
-        "height": 780,
+        "width": 600,
+        "height": 720,
         "resizable": true
       }
     ],
