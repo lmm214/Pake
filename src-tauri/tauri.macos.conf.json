@@ -2,9 +2,9 @@
   "tauri": {
     "bundle": {
       "icon": [
-        "icons/weread.icns"
+        "icons/memos.icns"
       ],
-      "identifier": "com.tw93.weread",
+      "identifier": "com.lmm214.memos",
       "active": true,
       "category": "DeveloperTool",
       "copyright": "",
