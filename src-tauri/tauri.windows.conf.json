@@ -2,16 +2,16 @@
   "tauri": {
     "bundle": {
       "icon": [
-        "png/weread_256.ico",
-        "png/weread_32.ico"
+        "png/memos_256.ico",
+        "png/memos_32.ico"
       ],
-      "identifier": "com.tw93.weread",
+      "identifier": "com.lmm214.memos",
       "active": true,
       "category": "DeveloperTool",
       "copyright": "",
       "externalBin": [],
       "longDescription": "",
-      "resources": ["png/weread_32.ico"],
+      "resources": ["png/memos_32.ico"],
       "shortDescription": "",
       "targets": ["msi"],
       "windows": {
