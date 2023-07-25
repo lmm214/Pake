@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
+    
+  // JS 调用在线字体
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.type = "text/css";
+  link.href = "https://npm.elemecdn.com/lxgw-wenkai-screen-webfont/style.css";
+  document.head.append(link);
+  
   // Create a modal
   const modalHtml = `
   <div id="pakeUrlModal" class="pake-modal">
