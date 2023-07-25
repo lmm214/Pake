@@ -1,4 +1,12 @@
 window.addEventListener('DOMContentLoaded', _event => {
+  
+  // JS 调用在线字体
+  const LXGWlink = document.createElement("link");
+  LXGWlink.rel = "stylesheet";
+  LXGWlink.type = "text/css";
+  LXGWlink.href = "https://npm.elemecdn.com/lxgw-wenkai-screen-webfont/style.css";
+  document.head.append(LXGWlink);
+  
   const css = `
     #page #footer-wrapper,
     .drawing-board .toolbar .toolbar-action,
@@ -425,4 +433,5 @@ window.addEventListener('DOMContentLoaded', _event => {
   const styleElement = document.createElement('style');
   styleElement.innerHTML = css;
   document.head.appendChild(styleElement);
+  
 });
