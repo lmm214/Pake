@@ -1,5 +1,11 @@
 window.addEventListener('DOMContentLoaded', _event => {
   
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.type = "text/css";
+  link.href = "https://npm.elemecdn.com/lxgw-wenkai-screen-webfont/style.css";
+  document.head.appendChild(link);
+  
   const css = `
     #page #footer-wrapper,
     .drawing-board .toolbar .toolbar-action,
