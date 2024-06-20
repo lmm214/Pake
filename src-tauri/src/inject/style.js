@@ -1,6 +1,81 @@
 window.addEventListener('DOMContentLoaded', _event => {
   // Customize and transform existing functions
   const contentCSS = `
+    *{font-family: "LXGW WenKai" !important;}
+
+body{
+  line-height:20px !important;
+}
+.readerTopBar,
+.readerChapterContent{width:95% !important;}
+.readerTopBar{height:50px !important;}
+.readerChapterContent{
+    margin:50px 0 0 !important;
+    height: calc(100% - 70px) !important;
+}
+
+.readerControls{
+    width: 40px !important;
+    transform: unset !important;
+    bottom:0 !important;
+    top: unset !important;
+    right:-45px !important;
+}
+.readerControls_fontSize:not(:first-child), .readerControls_item:not(:first-child){
+    margin-top:0 !important;
+}
+.wr_whiteTheme .readerControls_item,
+.readerControls .readerControls_fontSize{
+    box-shadow:none !important;
+}
+.readerControls_item,.readerControls_fontSize{opacity:0.1 !important;}
+.readerControls_item:hover,.readerControls_fontSize:hover{opacity:0.7 !important;}
+
+html body.wr_whiteTheme,
+.wr_whiteTheme .navBar_home,
+.wr_whiteTheme .app,
+.wr_whiteTheme .navBar,
+.wr_whiteTheme .readerTopBar,
+.wr_whiteTheme .readerChapterContent_container,
+.wr_whiteTheme .readerChapterContent,
+.wr_whiteTheme .readerContent .app_content{
+  background-color: #f9f3e8 !important;
+}
+
+.wr_whiteTheme .navBar_input,
+.wr_whiteTheme .bookshelf_preview_item,
+.wr_whiteTheme .recommend_preview_item,
+.readerTopBar,
+.readerControls_item,
+.wr_whiteTheme .readerControls_fontSize{
+    background-color:transparent !important;
+}
+
+.shelf_download_app,
+.readerTopBar_right{
+    display:none !important;
+}
+.reader_float_top_reviews_panel_wrapper{
+    padding: 0px !important;
+}
+
+.renderTarget_pager{
+    bottom:5px !important;
+}
+
+.renderTarget_pager,
+.renderTarget_pager_content{
+    height:35px !important;
+}
+.content_decoration_wrapper{
+    padding: 35px 0 !important;
+}
+.renderTargetPageInfo_header{
+    top:0 !important;
+}
+.wr_bookCover_decor.wr_bookCover_gradientDecor{
+    background-image:none !important;
+}
     #page #footer-wrapper,
     .drawing-board .toolbar .toolbar-action,
     .c-swiper-container,
