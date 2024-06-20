@@ -1,7 +1,7 @@
 window.addEventListener('DOMContentLoaded', _event => {
   // Customize and transform existing functions
   const contentCSS = `
-    *{font-family: "LXGW WenKai" !important;}
+    *{font-family: "LXGW WenKai Screen" !important;}
 
 body{
   line-height:20px !important;
