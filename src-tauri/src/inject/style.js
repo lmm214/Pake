@@ -2,35 +2,6 @@ window.addEventListener('DOMContentLoaded', _event => {
   // Customize and transform existing functions
   const contentCSS = `
     *{font-family: "LXGW WenKai Screen" !important;}
-
-body{
-  line-height:20px !important;
-}
-.readerTopBar,
-.readerChapterContent{width:95% !important;}
-.readerTopBar{height:50px !important;}
-.readerChapterContent{
-    margin:50px 0 0 !important;
-    height: calc(100% - 70px) !important;
-}
-
-.readerControls{
-    width: 40px !important;
-    transform: unset !important;
-    bottom:0 !important;
-    top: unset !important;
-    right:-45px !important;
-}
-.readerControls_fontSize:not(:first-child), .readerControls_item:not(:first-child){
-    margin-top:0 !important;
-}
-.wr_whiteTheme .readerControls_item,
-.readerControls .readerControls_fontSize{
-    box-shadow:none !important;
-}
-.readerControls_item,.readerControls_fontSize{opacity:0.1 !important;}
-.readerControls_item:hover,.readerControls_fontSize:hover{opacity:0.7 !important;}
-
 html body.wr_whiteTheme,
 .wr_whiteTheme .navBar_home,
 .wr_whiteTheme .app,
@@ -51,28 +22,35 @@ html body.wr_whiteTheme,
     background-color:transparent !important;
 }
 
+.readerControls{
+    width: 40px !important;
+    transform: unset !important;
+    bottom:0 !important;
+    top: unset !important;
+    right:-45px !important;
+}
+.readerControls_fontSize:not(:first-child), .readerControls_item:not(:first-child){
+    margin-top:0 !important;
+}
+.readerControls_item,.readerControls_fontSize{opacity:0.1 !important;}
+.readerControls_item:hover,.readerControls_fontSize:hover{opacity:0.7 !important;}
+
+.wr_whiteTheme .readerControls_item,
+.readerControls .readerControls_fontSize{
+    box-shadow:none !important;
+}
 .shelf_download_app,
 .readerTopBar_right{
     display:none !important;
 }
-.reader_float_top_reviews_panel_wrapper{
-    padding: 0px !important;
+
+.wr_bookCover_decor.wr_bookCover_gradientDecor{
+    background-image:none !important;
 }
 
-.renderTarget_pager{
-    bottom:5px !important;
-}
+.readerTopBar{height:50px !important;margin-bottom:-30px;}
+.readerTopBar .readerTopBar_left{margin:0 0 0 26px;}
 
-.renderTarget_pager,
-.renderTarget_pager_content{
-    height:35px !important;
-}
-.content_decoration_wrapper{
-    padding: 35px 0 !important;
-}
-.renderTargetPageInfo_header{
-    top:0 !important;
-}
 .wr_bookCover_decor.wr_bookCover_gradientDecor{
     background-image:none !important;
 }
