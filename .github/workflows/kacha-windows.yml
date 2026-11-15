@@ -114,6 +114,27 @@ jobs:
             [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr h);
             [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
             [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+            public delegate bool EnumWindowsProc(IntPtr h, IntPtr l);
+            [DllImport("user32.dll")] public static extern bool EnumWindows(EnumWindowsProc callback, IntPtr l);
+            [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
+            public static IntPtr FindMainWindow(uint processId) {
+              IntPtr result = IntPtr.Zero;
+              long largestArea = 0;
+              EnumWindows((h, l) => {
+                uint pid;
+                GetWindowThreadProcessId(h, out pid);
+                RECT r;
+                if (pid == processId && IsWindowVisible(h) && GetWindowRect(h, out r)) {
+                  long area = (long)(r.Right - r.Left) * (r.Bottom - r.Top);
+                  if (r.Right - r.Left >= 300 && r.Bottom - r.Top >= 200 && area > largestArea) {
+                    result = h;
+                    largestArea = area;
+                  }
+                }
+                return true;
+              }, IntPtr.Zero);
+              return result;
+            }
           }
           '@
           [KachaWindowProbe]::SetProcessDPIAware() | Out-Null
@@ -127,7 +148,7 @@ jobs:
               Start-Sleep -Milliseconds 500
               $app.Refresh()
               if ($app.HasExited) { throw "App exited during startup: $($app.ExitCode)" }
-              $handle = $app.MainWindowHandle
+              $handle = [KachaWindowProbe]::FindMainWindow([uint32]$app.Id)
             } until (($handle -ne [IntPtr]::Zero -and [KachaWindowProbe]::IsWindowVisible($handle)) -or (Get-Date) -gt $deadline)
             if ($handle -eq [IntPtr]::Zero) { throw 'No application window appeared.' }
             Start-Sleep -Seconds 5
@@ -170,6 +191,7 @@ jobs:
           "$hash  咔嚓乐园.exe" | Set-Content SHA256.txt -Encoding utf8
 
       - name: Upload standalone EXE
+        if: always()
         uses: actions/upload-artifact@v6
         with:
           name: kacha-Windows-x64
