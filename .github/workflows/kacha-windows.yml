@@ -1,0 +1,191 @@
+name: Build Kacha Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/kacha-windows.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUSTFLAGS: -C target-feature=+crt-static
+    steps:
+      - name: Checkout pinned Pake source
+        uses: actions/checkout@v6
+        with:
+          repository: tw93/Pake
+          ref: 36565fa2fec130bd988502b2b9bafdfd95ab6751
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup Rust MSVC
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.95.0
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust compilation
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          shared-key: kacha-windows-x64-static
+
+      - name: Install dependencies and build CLI
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pnpm run cli:build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Configure and build application
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          @{
+            url = 'https://kacha.edui.fun/'
+            name = '咔嚓乐园'
+            title = '咔嚓乐园'
+            identifier = 'fun.edui.kacha.desktop'
+            icon = 'https://kacha.edui.fun/src/stickers/sparkling-star.webp'
+            appVersion = '1.0.0'
+            width = 1280
+            height = 820
+            fullscreen = $true
+            showSystemTray = $true
+            hideOnClose = $false
+            keepBinary = $true
+            targets = 'x64'
+            windowsToolchain = 'msvc'
+            restoreLastUrl = $false
+          } | ConvertTo-Json | Set-Content app.json -Encoding utf8
+          $result = & node dist/cli.js --config app.json --json
+          $buildExit = $LASTEXITCODE
+          $result | Set-Content build-result.json -Encoding utf8
+          if ($buildExit -ne 0) { throw "Pake failed: $result" }
+          $report = $result | ConvertFrom-Json
+          if (!$report.ok -or !($report.outputs | Where-Object format -eq 'binary')) {
+            throw 'Pake did not report a standalone executable.'
+          }
+          if (!(Test-Path '咔嚓乐园.exe')) { throw 'Executable missing.' }
+
+      - name: Verify standalone executable and window behavior
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          if (!$dumpbin) { throw 'dumpbin unavailable.' }
+          $imports = & $dumpbin.FullName /DEPENDENTS '咔嚓乐园.exe'
+          $imports | Set-Content dependencies.txt -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { throw 'PE dependency inspection failed.' }
+          if (($imports -join "`n") -match '(?i)(WebView2Loader|VCRUNTIME\d+|MSVCP\d+|MSVCR\d+)\.dll') {
+            throw 'Executable requires an additional application DLL.'
+          }
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          Add-Type @'
+          using System;
+          using System.Runtime.InteropServices;
+          public class KachaWindowProbe {
+            [StructLayout(LayoutKind.Sequential)]
+            public struct RECT { public int Left, Top, Right, Bottom; }
+            [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
+            [DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr h, int command);
+            [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr h);
+            [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
+            [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+          }
+          '@
+          [KachaWindowProbe]::SetProcessDPIAware() | Out-Null
+          $standalone = Join-Path $env:RUNNER_TEMP 'kacha-standalone'
+          New-Item -ItemType Directory -Path $standalone -Force | Out-Null
+          Copy-Item '咔嚓乐园.exe' $standalone
+          $app = Start-Process (Join-Path $standalone '咔嚓乐园.exe') -WorkingDirectory $standalone -PassThru
+          try {
+            $deadline = (Get-Date).AddSeconds(90)
+            do {
+              Start-Sleep -Milliseconds 500
+              $app.Refresh()
+              if ($app.HasExited) { throw "App exited during startup: $($app.ExitCode)" }
+              $handle = $app.MainWindowHandle
+            } until (($handle -ne [IntPtr]::Zero -and [KachaWindowProbe]::IsWindowVisible($handle)) -or (Get-Date) -gt $deadline)
+            if ($handle -eq [IntPtr]::Zero) { throw 'No application window appeared.' }
+            Start-Sleep -Seconds 5
+            $rect = New-Object KachaWindowProbe+RECT
+            [KachaWindowProbe]::GetWindowRect($handle, [ref]$rect) | Out-Null
+            $screen = [System.Windows.Forms.Screen]::FromHandle($handle).Bounds
+            if (($rect.Right - $rect.Left) -lt $screen.Width -or ($rect.Bottom - $rect.Top) -lt $screen.Height) {
+              throw "Startup is not fullscreen: $($rect | ConvertTo-Json -Compress)"
+            }
+            $image = New-Object System.Drawing.Bitmap($screen.Width, $screen.Height)
+            $graphics = [System.Drawing.Graphics]::FromImage($image)
+            $graphics.CopyFromScreen($screen.Location, [System.Drawing.Point]::Empty, $screen.Size)
+            $image.Save((Join-Path $pwd 'windows-startup.png'))
+            $graphics.Dispose()
+            $image.Dispose()
+            [KachaWindowProbe]::ShowWindowAsync($handle, 6) | Out-Null
+            Start-Sleep -Seconds 5
+            $app.Refresh()
+            if ($app.HasExited -or ![KachaWindowProbe]::IsIconic($handle)) {
+              throw 'Minimize did not keep the application running.'
+            }
+            [KachaWindowProbe]::ShowWindowAsync($handle, 9) | Out-Null
+            Start-Sleep -Seconds 2
+            $app.Refresh()
+            if ($app.HasExited -or [KachaWindowProbe]::IsIconic($handle)) {
+              throw 'Application could not be restored.'
+            }
+            @{
+              fullscreenOnStartup = $true
+              survivesMinimize = $true
+              restoresAfterMinimize = $true
+              launchedFromExeOnlyFolder = $true
+              sha256 = (Get-FileHash '咔嚓乐园.exe' -Algorithm SHA256).Hash
+              pakeCommit = '36565fa2fec130bd988502b2b9bafdfd95ab6751'
+            } | ConvertTo-Json | Set-Content validation.json -Encoding utf8
+          } finally {
+            if (!$app.HasExited) { Stop-Process -Id $app.Id -Force }
+          }
+          $hash = (Get-FileHash '咔嚓乐园.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  咔嚓乐园.exe" | Set-Content SHA256.txt -Encoding utf8
+
+      - name: Upload standalone EXE
+        uses: actions/upload-artifact@v6
+        with:
+          name: kacha-Windows-x64
+          path: 咔嚓乐园.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload build verification
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: kacha-build-verification
+          path: |
+            app.json
+            build-result.json
+            validation.json
+            SHA256.txt
+            dependencies.txt
+            windows-startup.png
+          if-no-files-found: ignore
+          retention-days: 30
