@@ -65,12 +65,15 @@ jobs:
             title = '咔嚓乐园'
             identifier = 'fun.edui.kacha.desktop'
             icon = 'https://kacha.edui.fun/src/stickers/sparkling-star.webp'
-            appVersion = '1.0.0'
-            width = 1280
-            height = 820
-            fullscreen = $true
+            appVersion = '1.0.1'
+            width = 1200
+            height = 780
+            fullscreen = $false
+            maximize = $true
+            hideWindowDecorations = $false
+            resizable = $true
             showSystemTray = $true
-            hideOnClose = $false
+            hideOnClose = $true
             keepBinary = $true
             targets = 'x64'
             windowsToolchain = 'msvc'
@@ -112,6 +115,9 @@ jobs:
             [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
             [DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr h, int command);
             [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr h);
+            [DllImport("user32.dll")] public static extern bool IsZoomed(IntPtr h);
+            [DllImport("user32.dll", EntryPoint="GetWindowLongW")] public static extern int GetWindowLong(IntPtr h, int index);
+            [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint message, IntPtr w, IntPtr l);
             [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
             [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
             public delegate bool EnumWindowsProc(IntPtr h, IntPtr l);
@@ -155,8 +161,15 @@ jobs:
             $rect = New-Object KachaWindowProbe+RECT
             [KachaWindowProbe]::GetWindowRect($handle, [ref]$rect) | Out-Null
             $screen = [System.Windows.Forms.Screen]::FromHandle($handle).Bounds
-            if (($rect.Right - $rect.Left) -lt $screen.Width -or ($rect.Bottom - $rect.Top) -lt $screen.Height) {
-              throw "Startup is not fullscreen: $($rect | ConvertTo-Json -Compress)"
+            if (![KachaWindowProbe]::IsZoomed($handle)) { throw 'Startup window is not maximized.' }
+            $style = [KachaWindowProbe]::GetWindowLong($handle, -16)
+            $requiredStyle = 0x00C00000 -bor 0x00080000 -bor 0x00020000 -bor 0x00010000
+            if (($style -band $requiredStyle) -ne $requiredStyle) {
+              throw "Title bar or system window buttons are missing: $style"
+            }
+            $configured = Get-Content app.json -Raw | ConvertFrom-Json
+            if ($configured.width -ne 1200 -or $configured.height -ne 780 -or $configured.fullscreen -or !$configured.maximize -or !$configured.hideOnClose) {
+              throw 'Window configuration differs from requested settings.'
             }
             $image = New-Object System.Drawing.Bitmap($screen.Width, $screen.Height)
             $graphics = [System.Drawing.Graphics]::FromImage($image)
@@ -176,8 +189,26 @@ jobs:
             if ($app.HasExited -or [KachaWindowProbe]::IsIconic($handle)) {
               throw 'Application could not be restored.'
             }
+            [KachaWindowProbe]::PostMessage($handle, 0x0010, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+            Start-Sleep -Seconds 3
+            $app.Refresh()
+            if ($app.HasExited -or [KachaWindowProbe]::IsWindowVisible($handle)) {
+              throw 'Closing the window did not hide it while keeping the process alive.'
+            }
+            # The single-instance callback reveals the existing window on relaunch.
+            $relaunch = Start-Process (Join-Path $standalone '咔嚓乐园.exe') -WorkingDirectory $standalone -PassThru
+            Start-Sleep -Seconds 3
+            $app.Refresh()
+            if ($app.HasExited -or ![KachaWindowProbe]::IsWindowVisible($handle) -or [KachaWindowProbe]::IsIconic($handle)) {
+              throw 'Hidden application could not be revealed by relaunch.'
+            }
             @{
-              fullscreenOnStartup = $true
+              maximizedOnStartup = $true
+              nativeTitleBarAndButtons = $true
+              configuredWidth = 1200
+              configuredHeight = 780
+              hidesOnClose = $true
+              restoresAfterClose = $true
               survivesMinimize = $true
               restoresAfterMinimize = $true
               launchedFromExeOnlyFolder = $true
