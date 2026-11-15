@@ -71,7 +71,6 @@ jobs:
             fullscreen = $false
             maximize = $true
             hideWindowDecorations = $false
-            resizable = $true
             showSystemTray = $true
             hideOnClose = $true
             keepBinary = $true
