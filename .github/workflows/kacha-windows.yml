@@ -45,6 +45,7 @@ jobs:
         with:
           workspaces: src-tauri -> target
           shared-key: kacha-windows-x64-static
+          cache-on-failure: true
 
       - name: Install dependencies and build CLI
         shell: pwsh
@@ -73,6 +74,7 @@ jobs:
             keepBinary = $true
             targets = 'x64'
             windowsToolchain = 'msvc'
+            installerLanguage = 'zh-CN'
             restoreLastUrl = $false
           } | ConvertTo-Json | Set-Content app.json -Encoding utf8
           $result = & node dist/cli.js --config app.json --json
